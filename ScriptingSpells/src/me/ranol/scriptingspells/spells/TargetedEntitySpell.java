@@ -40,7 +40,6 @@ public abstract class TargetedEntitySpell extends TargetedSpell {
 
 	public TargetedEntitySpell(String name) {
 		super(name);
-		// TODO 자동 생성된 생성자 스텁
 	}
 
 	public abstract SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power);
@@ -51,7 +50,8 @@ public abstract class TargetedEntitySpell extends TargetedSpell {
 		if (target == null) return SpellCastState.NOTARGET;
 		SpellCastState state = castAtEntity(entity, target, power);
 		if (!state.isSpellCancelled() && !targetMessage.isEmpty()) {
-			target.sendMessage(targetMessage);
+			target.sendMessage(targetMessage.replace('&', '§')
+				.replace("§§", "&"));
 		}
 		return state;
 	}

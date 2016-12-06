@@ -28,8 +28,10 @@ public class CastCommand implements TabExecutor {
 				def.addAll(TabCompletor.complete(a[0], "reload", "rconf", "rspell", "export"));
 			}
 			if (s instanceof Player) {
-				def.addAll(TabCompletor.complete(a[0],
-						SpellManager.hasSpells(s).stream().map(Spell::getName).collect(Collectors.toList())));
+				def.addAll(TabCompletor.complete(a[0], SpellManager.hasSpells(s)
+					.stream()
+					.map(Spell::getName)
+					.collect(Collectors.toList())));
 			}
 		}
 		return def;
@@ -67,7 +69,8 @@ public class CastCommand implements TabExecutor {
 			return true;
 		} else if (a[0].equals("export")) {
 			TaskTimer t = new TaskTimer();
-			File file = new File(ScriptingSpells.getInstance().getDataFolder(), a.length == 1 ? "docs.json" : a[1]);
+			File file = new File(ScriptingSpells.getInstance()
+				.getDataFolder(), a.length == 1 ? "docs.json" : a[1]);
 			ScriptingSpells.msg(s, "Doc을 내보냅니다. (대상 : " + file.getAbsolutePath() + ")");
 			t.start();
 			DocExporter.exportAll(file);
@@ -82,7 +85,7 @@ public class CastCommand implements TabExecutor {
 				}
 				SpellCastState state = spell.cast((Player) s, 1.0f);
 				switch (state) {
-				case CANCELLED:
+				case EVENT_CANCEL:
 					ScriptingSpells.msg(s, "스펠 발동이 취소되었습니다.");
 					break;
 				case CANTCAST:
@@ -94,6 +97,8 @@ public class CastCommand implements TabExecutor {
 				case NOTARGET:
 					ScriptingSpells.msg(s, "타겟이 없습니다.");
 					break;
+				case IGNORE:
+				case IGNORE_CANCEL:
 				case SUCESS:
 					break;
 				}

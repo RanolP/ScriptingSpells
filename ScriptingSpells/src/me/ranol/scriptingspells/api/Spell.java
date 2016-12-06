@@ -7,14 +7,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.Listener;
 
 import me.ranol.scriptingspells.ParserManagement;
-import me.ranol.scriptingspells.ScriptingSpells;
 import me.ranol.scriptingspells.api.defaultparser.CastItemParser;
 import me.ranol.scriptingspells.api.docs.OptionDocs;
 import me.ranol.scriptingspells.api.docs.SpellDocs;
@@ -29,6 +26,8 @@ public abstract class Spell {
 			return SpellCastState.SUCESS;
 		}
 	};
+
+	protected boolean cooldownCheck = true;
 
 	@SpellOption("debug")
 	@OptionDocs("스펠을 디버깅할 여부입니다.")
@@ -71,10 +70,6 @@ public abstract class Spell {
 	public Spell(String name) {
 		this.name = name;
 		if (!isFieldRegistered(this.getClass())) registerFields();
-		if (this instanceof Listener) {
-			Bukkit.getPluginManager()
-				.registerEvents((Listener) this, ScriptingSpells.getInstance());
-		}
 	}
 
 	private final void registerFields() {
@@ -154,17 +149,17 @@ public abstract class Spell {
 		return getCooldown(caster) > 0.0f;
 	}
 
-	private void cooldown(LivingEntity caster) {
+	protected void cooldown(LivingEntity caster) {
 		castAt.set(caster.getUniqueId(), System.currentTimeMillis() + (long) (cooldown * 1000));
 	}
 
 	public SpellCastState cast(LivingEntity caster, float power) {
-		if (onCooldown(caster)) return SpellCastState.COOLDOWN;
+		if (cooldownCheck && onCooldown(caster)) return SpellCastState.COOLDOWN;
 		SpellCastState state = castReal(caster, power);
 		if (!state.isSpellCancelled()) {
 			cooldown(caster);
 			if (!casterMessage.isEmpty()) caster.sendMessage(casterMessage.replace('&', '§')
-				.replace("&&", "&"));
+				.replace("§§", "&"));
 		}
 		return state;
 	}
@@ -198,9 +193,7 @@ public abstract class Spell {
 				else if (type == String.class) o = cfg.getString(keys);
 				else o = cfg.get(keys);
 				if (o == null) continue;
-				if (result.setOption(s, o)) {
-					ScriptingSpells.debug("옵션 설정 완료: " + s + "=" + o);
-				}
+				result.setOption(s, o);
 			}
 		} catch (ClassNotFoundException e) {
 			error("스킬 파일 " + cfg.getCurrentPath() + "에서 " + key + " 스킬 로드 중에 에러가 발생했습니다.");
