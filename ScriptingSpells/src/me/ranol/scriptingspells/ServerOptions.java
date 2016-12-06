@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class ServerOptions {
 	static enum Option {
-		DEBUG, THREAD
+		DEBUG
 	}
 
 	static HashMap<Option, Object> map = new HashMap<>();

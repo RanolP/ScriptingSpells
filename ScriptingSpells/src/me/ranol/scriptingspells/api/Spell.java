@@ -5,11 +5,7 @@ import static me.ranol.scriptingspells.ScriptingSpells.line;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -22,6 +18,7 @@ import me.ranol.scriptingspells.ScriptingSpells;
 import me.ranol.scriptingspells.api.defaultparser.CastItemParser;
 import me.ranol.scriptingspells.api.docs.OptionDocs;
 import me.ranol.scriptingspells.api.docs.SpellDocs;
+import me.ranol.scriptingspells.utils.UUIDStorange;
 
 @SpellDocs("모든 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
 public abstract class Spell {
@@ -60,13 +57,82 @@ public abstract class Spell {
 
 	private final String name;
 
-	private HashMap<UUID, Long> castAt = new HashMap<>();
+	private UUIDStorange<Long> castAt = new UUIDStorange<>();
+
+	private static HashMap<Class<? extends Spell>, HashMap<String, Field>> fieldMap = new HashMap<>();
+
+	private static final boolean isFieldRegistered(Class<? extends Spell> clazz) {
+		if (fieldMap == null) synchronized (clazz) {
+			fieldMap = new HashMap<>();
+		}
+		return fieldMap.containsKey(clazz);
+	}
 
 	public Spell(String name) {
 		this.name = name;
+		if (!isFieldRegistered(this.getClass())) registerFields();
 		if (this instanceof Listener) {
-			Bukkit.getPluginManager().registerEvents((Listener) this, ScriptingSpells.getInstance());
+			Bukkit.getPluginManager()
+				.registerEvents((Listener) this, ScriptingSpells.getInstance());
 		}
+	}
+
+	private final void registerFields() {
+		HashMap<String, Field> fields = new HashMap<>();
+		Class<?> sup = this.getClass();
+		while (Spell.class.isAssignableFrom(sup)) {
+			for (Field f : sup.getDeclaredFields()) {
+				SpellOption anno = f.getAnnotation(SpellOption.class);
+				if (anno != null) {
+					f.setAccessible(true);
+					fields.put(anno.value(), f);
+				}
+
+			}
+			sup = sup.getSuperclass();
+		}
+		fieldMap.put(this.getClass(), fields);
+	}
+
+	private final Class<?> getFieldClass(String key) {
+		if (!isFieldRegistered(getClass())) return Object.class;
+		HashMap<String, Field> fields = fieldMap.get(getClass());
+		if (fields.containsKey(key)) {
+			try {
+				return fields.get(key)
+					.getType();
+			} catch (IllegalArgumentException e) {
+				return Object.class;
+			}
+		}
+		return Object.class;
+	}
+
+	public final boolean setOption(String key, Object value) {
+		if (!isFieldRegistered(getClass())) return false;
+		HashMap<String, Field> fields = fieldMap.get(getClass());
+		if (fields.containsKey(key)) {
+			try {
+				Field field = fields.get(key);
+				SpellParser parser = field.getAnnotation(SpellParser.class);
+				if (parser != null) {
+					IParser<Object, Object> p = ParserManagement.restore(parser.value());
+					try {
+						value = p.parse(value);
+					} catch (Exception e) {
+						error("스킬 " + getName() + "에서 " + key + " 스킬 로드 중에 에러가 발생했습니다.");
+						error("옵션 " + key + "의 값이 정확하지 않습니다.");
+						error("옵션 " + key + "에는 " + p.options() + "만이 올 수 있습니다.");
+						return false;
+					}
+				}
+				field.set(this, value);
+				return true;
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				return false;
+			}
+		}
+		return false;
 	}
 
 	public String getName() {
@@ -80,8 +146,7 @@ public abstract class Spell {
 	}
 
 	public float getCooldown(CommandSender s) {
-		if (s instanceof LivingEntity)
-			return getCooldown((LivingEntity) s);
+		if (s instanceof LivingEntity) return getCooldown((LivingEntity) s);
 		return 0f;
 	}
 
@@ -90,17 +155,16 @@ public abstract class Spell {
 	}
 
 	private void cooldown(LivingEntity caster) {
-		castAt.put(caster.getUniqueId(), System.currentTimeMillis() + (long) (cooldown * 1000));
+		castAt.set(caster.getUniqueId(), System.currentTimeMillis() + (long) (cooldown * 1000));
 	}
 
 	public SpellCastState cast(LivingEntity caster, float power) {
-		if (onCooldown(caster))
-			return SpellCastState.COOLDOWN;
+		if (onCooldown(caster)) return SpellCastState.COOLDOWN;
 		SpellCastState state = castReal(caster, power);
 		if (!state.isSpellCancelled()) {
 			cooldown(caster);
-			if (!casterMessage.isEmpty())
-				caster.sendMessage(casterMessage);
+			if (!casterMessage.isEmpty()) caster.sendMessage(casterMessage.replace('&', '§')
+				.replace("&&", "&"));
 		}
 		return state;
 	}
@@ -108,8 +172,7 @@ public abstract class Spell {
 	public abstract SpellCastState castReal(LivingEntity entity, float power);
 
 	public static Spell newInstance(YamlConfiguration cfg, String key, String className) {
-		if (className.startsWith("."))
-			className = "me.ranol.scriptingspells.spells" + className;
+		if (className.startsWith(".")) className = "me.ranol.scriptingspells.spells" + className;
 		Spell result = Spell.NONE;
 		try {
 			Class<?> clazz = Class.forName(className);
@@ -118,61 +181,25 @@ public abstract class Spell {
 				error("스킬 클래스 " + className + "는 Spell을 상속받지 않았습니다.");
 				return result;
 			}
-			result = (Spell) clazz.getConstructor(String.class).newInstance(key);
-			List<Field> allField = new ArrayList<>();
-			Class<?> sup = clazz;
-			while (Spell.class.isAssignableFrom(sup)) {
-				allField.addAll(Arrays.asList(sup.getDeclaredFields()));
-				sup = sup.getSuperclass();
-			}
-			for (Field field : allField) {
-				SpellOption option = field.getAnnotation(SpellOption.class);
-				if (option != null) {
-					field.setAccessible(true);
-					Object o = null;
-					String keys = key + "." + option.value();
-					Class<?> cType = field.getType();
-					boolean parsed = true;
-					if (cType.isPrimitive()) {
-						if (cType == int.class) {
-							o = cfg.getInt(keys);
-						} else if (cType == long.class) {
-							o = (long) cfg.getInt(keys);
-						} else if (cType == short.class) {
-							o = (short) cfg.getInt(keys);
-						} else if (cType == byte.class) {
-							o = (byte) cfg.getInt(keys);
-						} else if (cType == float.class) {
-							o = (float) cfg.getDouble(keys);
-						} else if (cType == double.class) {
-							o = cfg.getDouble(keys);
-						} else if (cType == boolean.class) {
-							o = cfg.getBoolean(keys);
-						} else if (cType == String.class) {
-							o = cfg.getString(keys);
-						}
-					} else {
-						o = cfg.get(keys);
-						parsed = false;
-					}
-
-					if (o == null)
-						continue;
-					SpellParser parser = field.getAnnotation(SpellParser.class);
-					if (parser != null) {
-						IParser<Object, Object> p = ParserManagement.restore(parser.value());
-						try {
-							o = p.parse(o);
-						} catch (Exception e) {
-							error("스킬 파일 " + cfg.getCurrentPath() + "에서 " + key + " 스킬 로드 중에 에러가 발생했습니다.");
-							error("옵션 " + option.value() + "의 값이 정확하지 않습니다.");
-							error("옵션 " + option.value() + "에는 " + p.options() + "만이 올 수 있습니다.");
-							continue;
-						}
-					}
-					if (field.getType().isInstance(o) || parsed) {
-						field.set(result, o);
-					}
+			result = (Spell) clazz.getConstructor(String.class)
+				.newInstance(key);
+			for (String s : cfg.getConfigurationSection(key)
+				.getKeys(false)) {
+				Object o;
+				String keys = key + "." + s;
+				Class<?> type = result.getFieldClass(keys);
+				if (type == byte.class) o = (byte) cfg.getInt(keys);
+				else if (type == short.class) o = (short) cfg.getInt(keys);
+				else if (type == int.class) o = cfg.getInt(keys);
+				else if (type == long.class) o = cfg.getInt(keys);
+				else if (type == float.class) o = (float) cfg.getDouble(keys);
+				else if (type == double.class) o = cfg.getDouble(keys);
+				else if (type == boolean.class) o = cfg.getBoolean(keys);
+				else if (type == String.class) o = cfg.getString(keys);
+				else o = cfg.get(keys);
+				if (o == null) continue;
+				if (result.setOption(s, o)) {
+					ScriptingSpells.debug("옵션 설정 완료: " + s + "=" + o);
 				}
 			}
 		} catch (ClassNotFoundException e) {
@@ -195,10 +222,12 @@ public abstract class Spell {
 			error("인스턴스 생성 도중, 생성자가 오류를 보냈습니다, 오류 StackTrace::");
 			line('6', 'l');
 			Throwable t = e.getTargetException();
-			error(t.getClass().getName() + ": " + t.getMessage());
+			error(t.getClass()
+				.getName() + ": " + t.getMessage());
 			for (StackTraceElement s : t.getStackTrace()) {
-				error(s.getFileName() + "»" + s.getClassName() + "." + s.getMethodName() + "(" + s.getLineNumber()
-						+ ")");
+				error(
+						s.getFileName() + "»" + s.getClassName() + "." + s.getMethodName() + "(" + s.getLineNumber()
+								+ ")");
 			}
 			line('6', 'l');
 			error("플러그인 제작자에게 문의하여, 이 오류를 수정하세요.");
@@ -207,13 +236,13 @@ public abstract class Spell {
 			error("YamlConfiguration과 String을 인자로 받는 생성자가 존재하지 않습니다.");
 			error("플러그인 제작자에게 문의하여, 이 오류를 수정하세요.");
 		} catch (SecurityException e) {
-			// TODO 자동 생성된 catch 블록
 			e.printStackTrace();
 		}
 		return result;
 	}
 
 	public static boolean isNone(Spell spell) {
-		return spell.getName().equals("ScriptingSpells:NONE");
+		return spell.getName()
+			.equals("ScriptingSpells:NONE");
 	}
 }

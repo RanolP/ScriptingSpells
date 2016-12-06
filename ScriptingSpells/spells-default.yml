@@ -1,0 +1,6 @@
+AttackDefault:
+  type: ".targeted.AttackSpell"
+  damage: 15
+  damage-cause: MAGIC
+  target-self: true
+  can-target: self

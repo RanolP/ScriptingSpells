@@ -15,14 +15,12 @@ import me.ranol.scriptingspells.api.SpellParser;
 import me.ranol.scriptingspells.api.TargetFilter;
 import me.ranol.scriptingspells.api.defaultparser.TargetParser;
 import me.ranol.scriptingspells.api.docs.OptionDocs;
+import me.ranol.scriptingspells.api.docs.SpellDocs;
 import me.ranol.scriptingspells.api.docs.SpigotDoc;
 import me.ranol.scriptingspells.api.docs.ValueList;
 
-public abstract class TargetedEntitySpell extends InstantSpell {
-
-	@SpellOption("range")
-	@OptionDocs("스펠이 맞을 수 있는 사거리입니다.")
-	protected double range = 10;
+@SpellDocs("모든 엔티티 대상 지정 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
+public abstract class TargetedEntitySpell extends TargetedSpell {
 
 	@SpellOption("target-self")
 	@OptionDocs("시전자만을 대상으로 삼을 여부입니다.")
@@ -48,10 +46,9 @@ public abstract class TargetedEntitySpell extends InstantSpell {
 	public abstract SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power);
 
 	@Override
-	public SpellCastState castReal(LivingEntity entity, float power) {
+	public final SpellCastState castReal(LivingEntity entity, float power) {
 		LivingEntity target = getTarget(entity, range * power);
-		if (target == null)
-			return SpellCastState.NOTARGET;
+		if (target == null) return SpellCastState.NOTARGET;
 		SpellCastState state = castAtEntity(entity, target, power);
 		if (!state.isSpellCancelled() && !targetMessage.isEmpty()) {
 			target.sendMessage(targetMessage);
@@ -59,7 +56,7 @@ public abstract class TargetedEntitySpell extends InstantSpell {
 		return state;
 	}
 
-	private LivingEntity getTarget(LivingEntity caster, double range) {
+	private final LivingEntity getTarget(LivingEntity caster, double range) {
 		if (targetSelf) {
 			return caster;
 		}
@@ -68,8 +65,7 @@ public abstract class TargetedEntitySpell extends InstantSpell {
 		ListIterator<Entity> li = near.listIterator();
 		while (li.hasNext()) {
 			Entity next = li.next();
-			if (next.isValid() && !next.isDead() && next instanceof LivingEntity)
-				alive.add((LivingEntity) next);
+			if (next.isValid() && !next.isDead() && next instanceof LivingEntity) alive.add((LivingEntity) next);
 		}
 		BlockIterator it = new BlockIterator(caster, (int) range);
 		while (it.hasNext()) {
@@ -81,13 +77,15 @@ public abstract class TargetedEntitySpell extends InstantSpell {
 			int y = b.getY();
 			int z = b.getZ();
 			for (LivingEntity e : alive) {
-				double ex = e.getLocation().getX();
-				double ey = e.getLocation().getY();
-				double ez = e.getLocation().getZ();
+				double ex = e.getLocation()
+					.getX();
+				double ey = e.getLocation()
+					.getY();
+				double ez = e.getLocation()
+					.getZ();
 				if ((x - 0.75D <= ex) && (ex <= x + 1.75D) && (z - 0.75D <= ez) && (ez <= z + 1.75D) && (y - 1 <= ey)
 						&& (ey <= y + 2.5D)) {
-					if (filter.canTarget(caster, e))
-						return e;
+					if (filter.canTarget(caster, e)) return e;
 				}
 			}
 		}

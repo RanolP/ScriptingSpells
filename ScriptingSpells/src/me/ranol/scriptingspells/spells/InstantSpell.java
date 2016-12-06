@@ -15,7 +15,7 @@ public abstract class InstantSpell extends Spell {
 		super(name);
 	}
 
-	public boolean canCastByCommand() {
+	public final boolean canCastByCommand() {
 		return canCastByCommand;
 	}
 }

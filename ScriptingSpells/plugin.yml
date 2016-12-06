@@ -1,0 +1,8 @@
+name: ScriptingSpells
+version: 1.0
+main: me.ranol.scriptingspells.ScriptingSpells
+author: Ranol_
+commands: 
+  cast:
+    aliases: c
+    description: "Spell Cast Command"

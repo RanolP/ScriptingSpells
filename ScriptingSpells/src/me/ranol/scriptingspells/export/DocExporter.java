@@ -62,13 +62,16 @@ public class DocExporter {
 		List<Class<? extends Spell>> spellClasses = loadSpellClasses();
 		JsonObject o = new JsonObject();
 		for (Class<? extends Spell> clazz : spellClasses) {
-			o.add(clazz.getName().replace("me.ranol.scriptingspells.spells", ""), export(clazz));
+			o.add(clazz.getName()
+				.replace("me.ranol.scriptingspells.spells", ""), export(clazz));
 		}
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		Gson gson = new GsonBuilder().setPrettyPrinting()
+			.create();
 		String raw = gson.toJson(o);
 		try {
 			Files.deleteIfExists(saveDir.toPath());
-			saveDir.getParentFile().mkdirs();
+			saveDir.getParentFile()
+				.mkdirs();
 			Files.write(saveDir.toPath(), raw.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -83,7 +86,9 @@ public class DocExporter {
 
 	private static <T> List<Class<T>> loadClassByPackage(String pack, Class<T> instance) {
 		List<Class<T>> result = new ArrayList<>();
-		URL url = DocExporter.class.getProtectionDomain().getCodeSource().getLocation();
+		URL url = DocExporter.class.getProtectionDomain()
+			.getCodeSource()
+			.getLocation();
 		String real;
 		try {
 			real = new URI(url.toString()).getPath();
@@ -92,17 +97,18 @@ public class DocExporter {
 		}
 		try (ZipInputStream jarStream = new ZipInputStream(new FileInputStream(real))) {
 			for (ZipEntry item = jarStream.getNextEntry(); item != null; item = jarStream.getNextEntry()) {
-				if (item.isDirectory())
-					continue;
-				String className = item.getName().replace('/', '.');
+				if (item.isDirectory()) continue;
+				String className = item.getName()
+					.replace('/', '.');
 				className = className.substring(0, className.length() - ".class".length());
 				try {
 					if (className.indexOf('$') != -1) {
 						continue;
 					}
 					Class<?> c = Class.forName(className);
-					if (!c.getPackage().getName().startsWith(pack))
-						continue;
+					if (!c.getPackage()
+						.getName()
+						.startsWith(pack)) continue;
 					if (instance.isAssignableFrom(c)) {
 						result.add((Class<T>) c);
 					}

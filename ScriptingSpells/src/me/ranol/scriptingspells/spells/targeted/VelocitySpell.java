@@ -45,12 +45,15 @@ public class VelocitySpell extends TargetedEntitySpell {
 	@Override
 	public SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		Location tloc = target.getLocation();
-		tloc.setYaw((casterYaw ? caster.getLocation().getYaw() : tloc.getYaw()) + yawModify);
+		tloc.setYaw((casterYaw ? caster.getLocation()
+			.getYaw() : tloc.getYaw()) + yawModify);
 		Vector v = tloc.getDirection();
-		v.setY(0).normalize().multiply(horizVelocity / 10 * power).setY(vertVelocity / 10 * power);
+		v.setY(0)
+			.normalize()
+			.multiply(horizVelocity / 10 * power)
+			.setY(vertVelocity / 10 * power);
 		target.setVelocity(v);
-		if (cancelDamage)
-			cancel.add(target.getUniqueId());
+		if (cancelDamage) cancel.add(target.getUniqueId());
 		return SpellCastState.SUCESS;
 	}
 

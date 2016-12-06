@@ -15,23 +15,19 @@ public class TabCompletor {
 	public static List<String> complete(String message, String... args) {
 		List<String> result = new ArrayList<>();
 		for (String arg : args) {
-			if (arg.toLowerCase().startsWith(message.toLowerCase()))
-				result.add(arg);
+			if (arg.toLowerCase()
+				.startsWith(message.toLowerCase())) result.add(arg);
 		}
 		return result;
 	}
 
 	public static void addPlayers(List<String> addto, boolean offline) {
-		if (offline)
-			for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-				if (player.getName() != null && !addto.contains(player.getName()))
-					addto.add(player.getName());
-			}
-		else
-			for (Player player : Bukkit.getOnlinePlayers()) {
-				if (player.getName() != null && !addto.contains(player.getName()))
-					addto.add(player.getName());
-			}
+		if (offline) for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
+			if (player.getName() != null && !addto.contains(player.getName())) addto.add(player.getName());
+		}
+		else for (Player player : Bukkit.getOnlinePlayers()) {
+			if (player.getName() != null && !addto.contains(player.getName())) addto.add(player.getName());
+		}
 	}
 
 	public static String getArgs(String[] args, int start) {
