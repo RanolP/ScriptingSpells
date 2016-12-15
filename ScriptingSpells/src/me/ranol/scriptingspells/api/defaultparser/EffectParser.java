@@ -22,9 +22,13 @@ public class EffectParser implements IParser<Entry<EffectPosition, SpellEffect>>
 			pos = EffectPosition.CASTER;
 		}
 		for (String s : sec.getKeys(false)) {
-			if ("type".equals(s)) continue;
+			switch (s) {
+			case "type":
+			case "position":
+				continue;
+			}
 			try {
-				result.setOption(s, section, key + "." + s);
+				result.setOption(s, sec);
 			} catch (ParserException e) {
 
 			}

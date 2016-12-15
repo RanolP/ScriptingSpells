@@ -4,12 +4,14 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import me.ranol.scriptingspells.api.ConfigOption;
+import me.ranol.scriptingspells.api.docs.ClassDocument;
 import me.ranol.scriptingspells.api.docs.ConfigDocument;
 
+@ClassDocument("번개 효과입니다.")
 public class LightningEffect extends SpellEffect {
 	@ConfigOption("silent")
 	@ConfigDocument("번개가 조용하게 치는 여부입니다.")
-	boolean silent = false;
+	protected boolean silent = false;
 
 	@Override
 	public String getName() {

@@ -22,20 +22,20 @@ public class VelocitySpell extends TargetedEntitySpell {
 	protected double horizVelocity = 40;
 
 	@ConfigOption("vert-velocity")
-	@ConfigDocument("y 반경으로 움직이는 양입니다.")
+	@ConfigDocument("y 반경으로 움직이는 양입니다, 0 미만일 경우 대상의 보는 방향 영향으로 갑니다.")
 	protected double vertVelocity = 10;
 
 	@ConfigOption("cancel-damage")
 	@ConfigDocument("데미지 취소 여부입니다.")
 	protected boolean cancelDamage = false;
 
-	@ConfigOption("yaw-modify")
+	@ConfigOption("yaw")
 	@ConfigDocument("적용된 값만큼 x, z 이동의 방향이 변경됩니다.")
-	protected float yawModify = 0;
+	protected float yaw = 0;
 
-	@ConfigOption("caster-yaw")
-	@ConfigDocument("시전자 기준으로 yaw를 설정하는 여부입니다.")
-	protected boolean casterYaw = true;
+	@ConfigOption("caster-location")
+	@ConfigDocument("시전자 좌표 기준으로 계산하는 여부입니다.")
+	protected boolean casterLocation = true;
 
 	private HashSet<UUID> cancel = new HashSet<>();
 
@@ -46,13 +46,14 @@ public class VelocitySpell extends TargetedEntitySpell {
 	@Override
 	public SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		Location tloc = target.getLocation();
-		tloc.setYaw((casterYaw ? caster.getLocation()
-			.getYaw() : tloc.getYaw()) + yawModify);
+		tloc.setYaw((casterLocation ? caster.getLocation()
+			.getYaw() : tloc.getYaw()) + yaw);
 		Vector v = tloc.getDirection();
-		v.setY(0)
-			.normalize()
-			.multiply(horizVelocity / 10 * power)
-			.setY(vertVelocity / 10 * power);
+		if (vertVelocity > 0) {
+			v.setY(vertVelocity / 10 * power);
+		}
+		v.normalize()
+			.multiply(horizVelocity / 10 * power);
 		target.setVelocity(v);
 		playEffects(EffectPosition.LINE, caster, target);
 		playEffects(EffectPosition.TARGET, caster, target);

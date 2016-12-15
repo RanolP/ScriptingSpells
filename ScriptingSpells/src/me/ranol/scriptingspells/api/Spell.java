@@ -15,14 +15,14 @@ import org.bukkit.entity.LivingEntity;
 import me.ranol.scriptingspells.ScriptingSpells;
 import me.ranol.scriptingspells.api.defaultparser.CastItemParser;
 import me.ranol.scriptingspells.api.defaultparser.EffectsParser;
-import me.ranol.scriptingspells.api.docs.ConfigDocument;
 import me.ranol.scriptingspells.api.docs.ClassDocument;
+import me.ranol.scriptingspells.api.docs.ConfigDocument;
 import me.ranol.scriptingspells.api.effects.EffectPosition;
 import me.ranol.scriptingspells.api.effects.SpellEffect;
 import me.ranol.scriptingspells.exceptions.ParserException;
 import me.ranol.scriptingspells.utils.UUIDStorage;
 
-@ClassDocument("모든 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
+@ClassDocument("모든 스펠의 기반이 되는 클래스입니다. 사용이 불가능합니다.")
 public abstract class Spell extends OptionReciever {
 	public static final Spell NONE = new Spell("ScriptingSpells:NONE") {
 
@@ -70,7 +70,9 @@ public abstract class Spell extends OptionReciever {
 
 	public Spell(String name) {
 		this.name = name;
-		if (!isFieldRegistered(this.getClass())) registerFields();
+		if (!isFieldRegistered(this.getClass())) {
+			registerFields(Spell.class);
+		}
 	}
 
 	public boolean hasAllUsers() {
@@ -137,9 +139,9 @@ public abstract class Spell extends OptionReciever {
 	}
 
 	@Override
-	public boolean setOption(String key, ConfigurationSection section, String realKey) {
+	public boolean setOption(String key, ConfigurationSection section) {
 		try {
-			return super.setOption(key, section, realKey);
+			return super.setOption(key, section);
 		} catch (ParserException e) {
 			error("스킬 " + getName() + "에서 " + key + " 옵션 로드 중에 에러가 발생했습니다.");
 			error("옵션 " + key + "의 값이 정확하지 않습니다.");
@@ -186,7 +188,7 @@ public abstract class Spell extends OptionReciever {
 				.newInstance(key);
 			for (String s : cfg.getConfigurationSection(key)
 				.getKeys(false)) {
-				result.setOption(s, cfg.getConfigurationSection(key), s);
+				result.setOption(s, cfg.getConfigurationSection(key));
 			}
 		} catch (ClassNotFoundException e) {
 			error("스킬 파일 " + cfg.getCurrentPath() + "에서 " + key + " 스킬 로드 중에 에러가 발생했습니다.");

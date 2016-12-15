@@ -10,7 +10,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
 import me.ranol.scriptingspells.api.OptionReciever;
+import me.ranol.scriptingspells.api.docs.ClassDocument;
 
+@ClassDocument("모든 효과의 기반이 되는 클래스입니다. 사용이 불가능합니다.")
 public abstract class SpellEffect extends OptionReciever {
 	private int between = 1;
 	private static final HashMap<String, Class<? extends SpellEffect>> registered = new HashMap<>();
@@ -20,7 +22,9 @@ public abstract class SpellEffect extends OptionReciever {
 	}
 
 	public SpellEffect() {
-		if (!isFieldRegistered(getClass())) registerFields();
+		if (!isFieldRegistered(getClass())) {
+			registerFields(SpellEffect.class);
+		}
 	}
 
 	public static void register(SpellEffect effect) {
@@ -93,6 +97,6 @@ public abstract class SpellEffect extends OptionReciever {
 			if (entry.getValue()
 				.equals(clazz)) return entry.getKey();
 		}
-		return "";
+		return clazz.getName();
 	}
 }

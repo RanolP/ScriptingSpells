@@ -21,10 +21,10 @@ public class OptionReciever {
 		return fieldMap.containsKey(clazz);
 	}
 
-	protected final void registerFields() {
+	protected final HashMap<String, Field> registerFields(Class<?> resist) {
 		HashMap<String, Field> fields = new HashMap<>();
 		Class<?> sup = this.getClass();
-		while (Spell.class.isAssignableFrom(sup)) {
+		while (resist.isAssignableFrom(sup)) {
 			for (Field f : sup.getDeclaredFields()) {
 				ConfigOption anno = f.getAnnotation(ConfigOption.class);
 				if (anno != null) {
@@ -36,6 +36,7 @@ public class OptionReciever {
 			sup = sup.getSuperclass();
 		}
 		fieldMap.put(this.getClass(), fields);
+		return fields;
 	}
 
 	public boolean setOption(String key, Object value) throws ParserException {
@@ -70,12 +71,12 @@ public class OptionReciever {
 		return false;
 	}
 
-	public boolean setOption(String key, ConfigurationSection section, String realKey) throws ParserException {
+	public boolean setOption(String key, ConfigurationSection section) throws ParserException {
 		if (!isFieldRegistered(getClass())) return false;
 		HashMap<String, Field> fields = fieldMap.get(getClass());
 		if (fields.containsKey(key)) {
 			try {
-				Object value = AbstractParser.DEFAULT.parse(section, realKey);
+				Object value = AbstractParser.DEFAULT.parse(section, key);
 				Field field = fields.get(key);
 				ConfigParser parser = field.getAnnotation(ConfigParser.class);
 				if (parser != null) {
@@ -85,7 +86,7 @@ public class OptionReciever {
 					try {
 						while (it.hasNext()) {
 							p = it.next();
-							value = p.parse(section, realKey);
+							value = p.parse(section, key);
 						}
 					} catch (Exception e) {
 						throw new ParserException(p, e);
