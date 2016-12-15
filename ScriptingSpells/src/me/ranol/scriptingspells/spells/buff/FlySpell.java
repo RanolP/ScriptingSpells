@@ -6,23 +6,24 @@ import org.bukkit.util.Vector;
 
 import me.ranol.scriptingspells.StaticScheduler;
 import me.ranol.scriptingspells.api.SpellCastState;
-import me.ranol.scriptingspells.api.SpellOption;
-import me.ranol.scriptingspells.api.docs.OptionDocs;
+import me.ranol.scriptingspells.api.ConfigOption;
+import me.ranol.scriptingspells.api.docs.ConfigDocument;
+import me.ranol.scriptingspells.api.effects.EffectPosition;
 import me.ranol.scriptingspells.spells.BuffSpell;
-import me.ranol.scriptingspells.utils.UUIDStorange;
+import me.ranol.scriptingspells.utils.UUIDStorage;
 import me.ranol.scriptingspells.utils.Wrap;
 
 public class FlySpell extends BuffSpell {
 
-	@SpellOption("cast-with-vector")
-	@OptionDocs("스펠 사용 시, 위로 살짝 뜰 여부입니다.")
+	@ConfigOption("cast-with-vector")
+	@ConfigDocument("스펠 사용 시, 위로 살짝 뜰 여부입니다.")
 	protected boolean castWithVector = true;
 
 	public FlySpell(String name) {
 		super(name);
 	}
 
-	UUIDStorange<Boolean> alreadyActivate = new UUIDStorange<>();
+	UUIDStorage<Boolean> alreadyActivate = new UUIDStorage<>();
 
 	@Override
 	public SpellCastState activate(LivingEntity e, float power) {
@@ -34,6 +35,7 @@ public class FlySpell extends BuffSpell {
 
 			Wrap<Integer> temp = Wrap.empty();
 			temp.set(StaticScheduler.repeatTask(() -> {
+				playEffects(EffectPosition.TICKS, e);
 				if (!isActive(e)) {
 					deactivate(e);
 					StaticScheduler.cancelTask(temp);
@@ -48,6 +50,7 @@ public class FlySpell extends BuffSpell {
 	public void deactivate(LivingEntity e) {
 		super.deactivate(e);
 		((Player) e).setAllowFlight(alreadyActivate.get(e));
+		playEffects(EffectPosition.END, e);
 	}
 
 }

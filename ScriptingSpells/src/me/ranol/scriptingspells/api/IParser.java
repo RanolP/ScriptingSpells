@@ -1,7 +1,9 @@
 package me.ranol.scriptingspells.api;
 
-public interface IParser<T, U> {
-	public U parse(T object);
+import org.bukkit.configuration.ConfigurationSection;
+
+public interface IParser<U> {
+	public U parse(ConfigurationSection section, String key);
 
 	public String options();
 }

@@ -10,32 +10,32 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BlockIterator;
 
 import me.ranol.scriptingspells.api.SpellCastState;
-import me.ranol.scriptingspells.api.SpellOption;
-import me.ranol.scriptingspells.api.SpellParser;
+import me.ranol.scriptingspells.api.ConfigOption;
+import me.ranol.scriptingspells.api.ConfigParser;
 import me.ranol.scriptingspells.api.TargetFilter;
 import me.ranol.scriptingspells.api.defaultparser.TargetParser;
-import me.ranol.scriptingspells.api.docs.OptionDocs;
-import me.ranol.scriptingspells.api.docs.SpellDocs;
-import me.ranol.scriptingspells.api.docs.SpigotDoc;
+import me.ranol.scriptingspells.api.docs.ConfigDocument;
+import me.ranol.scriptingspells.api.docs.ClassDocument;
+import me.ranol.scriptingspells.api.docs.LinkDocument;
 import me.ranol.scriptingspells.api.docs.ValueList;
 
-@SpellDocs("모든 엔티티 대상 지정 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
+@ClassDocument("모든 엔티티 대상 지정 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
 public abstract class TargetedEntitySpell extends TargetedSpell {
 
-	@SpellOption("target-self")
-	@OptionDocs("시전자만을 대상으로 삼을 여부입니다.")
+	@ConfigOption("target-self")
+	@ConfigDocument("시전자만을 대상으로 삼을 여부입니다.")
 	protected boolean targetSelf = false;
 
-	@SpellOption("target-message")
-	@OptionDocs("스펠 발동 성공 시, 대상에게 보내는 메시지입니다.")
+	@ConfigOption("target-message")
+	@ConfigDocument("스펠 발동 성공 시, 대상에게 보내는 메시지입니다.")
 	protected String targetMessage = "";
 
-	@SpellOption("can-target")
-	@SpellParser(TargetParser.class)
-	@OptionDocs("대상이 될 수 있는 것들의 목록입니다.")
+	@ConfigOption("can-target")
+	@ConfigParser(TargetParser.class)
+	@ConfigDocument("대상이 될 수 있는 것들의 목록입니다.")
 	@ValueList({ "player", "monster", "animals", "all", "self",
 			"등이 있으며, !를 붙여 부정을 할 수 있습니다. 자세한 목록은 Spigot Doc을 참고하세요." })
-	@SpigotDoc("https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html")
+	@LinkDocument("https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html")
 	protected TargetFilter filter = new TargetFilter();
 
 	public TargetedEntitySpell(String name) {

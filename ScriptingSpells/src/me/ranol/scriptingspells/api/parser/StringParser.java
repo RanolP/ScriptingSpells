@@ -1,7 +1,7 @@
 package me.ranol.scriptingspells.api.parser;
 
-import me.ranol.scriptingspells.api.IParser;
+import me.ranol.scriptingspells.api.AbstractParser;
 
-public interface StringParser<T> extends IParser<String, T> {
+public abstract class StringParser<T> extends AbstractParser<String, T> {
 
 }

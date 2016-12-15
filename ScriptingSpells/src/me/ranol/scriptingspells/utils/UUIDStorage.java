@@ -1,11 +1,12 @@
 package me.ranol.scriptingspells.utils;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.entity.LivingEntity;
 
-public class UUIDStorange<T> {
+public class UUIDStorage<T> {
 	HashMap<UUID, T> map = new HashMap<>();
 
 	public void set(UUID uid, T obj) {
@@ -46,5 +47,9 @@ public class UUIDStorange<T> {
 
 	public int size() {
 		return map.size();
+	}
+
+	public Set<UUID> uuidSet() {
+		return map.keySet();
 	}
 }

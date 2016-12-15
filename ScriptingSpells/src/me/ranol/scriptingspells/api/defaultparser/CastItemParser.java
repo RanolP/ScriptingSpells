@@ -6,7 +6,7 @@ import me.ranol.scriptingspells.api.CastItem;
 import me.ranol.scriptingspells.api.item.ItemManagement;
 import me.ranol.scriptingspells.api.parser.StringListParser;
 
-public class CastItemParser implements StringListParser<CastItem[]> {
+public class CastItemParser extends StringListParser<CastItem[]> {
 
 	@Override
 	public CastItem[] parse(List<String> object) {

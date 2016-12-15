@@ -4,7 +4,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import me.ranol.scriptingspells.api.parser.StringParser;
 
-public class DamageCauseParser implements StringParser<DamageCause> {
+public class DamageCauseParser extends StringParser<DamageCause> {
 
 	@Override
 	public DamageCause parse(String object) {
@@ -17,7 +17,8 @@ public class DamageCauseParser implements StringParser<DamageCause> {
 		for (DamageCause c : DamageCause.values()) {
 			b.append(", " + c.name());
 		}
-		return b.toString().replaceFirst(", ", "");
+		return b.toString()
+			.replaceFirst(", ", "");
 	}
 
 }

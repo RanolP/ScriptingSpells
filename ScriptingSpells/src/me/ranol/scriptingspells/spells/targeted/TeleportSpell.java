@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import me.ranol.scriptingspells.api.SpellCastState;
+import me.ranol.scriptingspells.api.effects.EffectPosition;
 import me.ranol.scriptingspells.spells.TargetedLocationSpell;
 
 public class TeleportSpell extends TargetedLocationSpell {
@@ -19,6 +20,8 @@ public class TeleportSpell extends TargetedLocationSpell {
 		target.setYaw(caster.getLocation()
 			.getYaw());
 		caster.teleport(target.add(0, 1, 0));
+		playEffects(EffectPosition.LINE, caster, target);
+		playEffects(EffectPosition.TARGET, caster, target);
 		return SpellCastState.SUCESS;
 	}
 

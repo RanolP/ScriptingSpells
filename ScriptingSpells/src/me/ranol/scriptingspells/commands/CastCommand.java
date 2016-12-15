@@ -15,17 +15,21 @@ import me.ranol.scriptingspells.api.Spell;
 import me.ranol.scriptingspells.api.SpellCastState;
 import me.ranol.scriptingspells.api.SpellManager;
 import me.ranol.scriptingspells.export.DocExporter;
+import me.ranol.scriptingspells.export.EffectsExporter;
+import me.ranol.scriptingspells.export.Exporter;
 import me.ranol.scriptingspells.utils.TabCompletor;
 import me.ranol.scriptingspells.utils.TaskTimer;
 
 public class CastCommand implements TabExecutor {
+	private final Exporter docs = new DocExporter();
+	private final Exporter effects = new EffectsExporter();
 
 	@Override
 	public List<String> onTabComplete(CommandSender s, Command c, String l, String[] a) {
 		List<String> def = new ArrayList<>();
 		if (a.length <= 1) {
 			if (s.isOp()) {
-				def.addAll(TabCompletor.complete(a[0], "reload", "rconf", "rspell", "export"));
+				def.addAll(TabCompletor.complete(a[0], "reload", "rconf", "rspell", "edocs", "eeff"));
 			}
 			if (s instanceof Player) {
 				def.addAll(TabCompletor.complete(a[0], SpellManager.hasSpells(s)
@@ -67,14 +71,23 @@ public class CastCommand implements TabExecutor {
 			ScriptingSpells.loadSpells();
 			ScriptingSpells.msg(s, "스펠들을 모두 불러왔습니다. (" + t.timeAsSecond() + "초 소모됨)");
 			return true;
-		} else if (a[0].equals("export")) {
+		} else if (a[0].equals("edocs")) {
 			TaskTimer t = new TaskTimer();
 			File file = new File(ScriptingSpells.getInstance()
 				.getDataFolder(), a.length == 1 ? "docs.json" : a[1]);
-			ScriptingSpells.msg(s, "Doc을 내보냅니다. (대상 : " + file.getAbsolutePath() + ")");
+			ScriptingSpells.msg(s, "설명 문서 목록을 내보냅니다. (대상 : " + file.getAbsolutePath() + ")");
 			t.start();
-			DocExporter.exportAll(file);
-			ScriptingSpells.msg(s, "Doc을 내보냈습니다. (" + t.timeAsSecond() + "초 소모됨)");
+			docs.exportAt(file);
+			ScriptingSpells.msg(s, "설명 문서 목록을 내보냈습니다. (" + t.timeAsSecond() + "초 소모됨)");
+			return true;
+		} else if (a[0].equals("eeff")) {
+			TaskTimer t = new TaskTimer();
+			File file = new File(ScriptingSpells.getInstance()
+				.getDataFolder(), a.length == 1 ? "effects.json" : a[1]);
+			ScriptingSpells.msg(s, "효과 목록을 내보냅니다. (대상 : " + file.getAbsolutePath() + ")");
+			t.start();
+			effects.exportAt(file);
+			ScriptingSpells.msg(s, "효과 목록을 내보냈습니다. (" + t.timeAsSecond() + "초 소모됨)");
 			return true;
 		} else if (a.length == 1) {
 			if (s instanceof Player) {

@@ -6,9 +6,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BlockIterator;
 
 import me.ranol.scriptingspells.api.SpellCastState;
-import me.ranol.scriptingspells.api.docs.SpellDocs;
+import me.ranol.scriptingspells.api.docs.ClassDocument;
 
-@SpellDocs("모든 위치 대상 지정 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
+@ClassDocument("모든 위치 대상 지정 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
 public abstract class TargetedLocationSpell extends TargetedSpell {
 	public TargetedLocationSpell(String name) {
 		super(name);

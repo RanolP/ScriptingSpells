@@ -2,14 +2,15 @@ package me.ranol.scriptingspells.api.defaultparser;
 
 import static me.ranol.scriptingspells.api.TargetFilter.TargetOption.*;
 
-import me.ranol.scriptingspells.api.IParser;
+import me.ranol.scriptingspells.api.AbstractParser;
 import me.ranol.scriptingspells.api.TargetFilter;
 
-public class TargetParser implements IParser<String, TargetFilter> {
+public class TargetParser extends AbstractParser<String, TargetFilter> {
 
 	@Override
 	public TargetFilter parse(String obj) {
-		String[] data = obj.replace(" ", "").split(",");
+		String[] data = obj.replace(" ", "")
+			.split(",");
 		TargetFilter f = new TargetFilter();
 		for (String s : data) {
 			switch (s.toLowerCase()) {
@@ -45,7 +46,8 @@ public class TargetParser implements IParser<String, TargetFilter> {
 				break;
 			default:
 				boolean set = !s.startsWith("!");
-				String type = s.replace("!", "").toUpperCase();
+				String type = s.replace("!", "")
+					.toUpperCase();
 				f.addType(type, set);
 			}
 		}

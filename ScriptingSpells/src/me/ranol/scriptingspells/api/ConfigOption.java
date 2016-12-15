@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
 @Target(FIELD)
-public @interface SpellOption {
+public @interface ConfigOption {
 	public String value();
 }

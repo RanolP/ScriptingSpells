@@ -3,30 +3,30 @@ package me.ranol.scriptingspells.spells;
 import org.bukkit.entity.LivingEntity;
 
 import me.ranol.scriptingspells.api.SpellCastState;
-import me.ranol.scriptingspells.api.SpellOption;
-import me.ranol.scriptingspells.api.docs.OptionDocs;
-import me.ranol.scriptingspells.api.docs.SpellDocs;
-import me.ranol.scriptingspells.utils.UUIDStorange;
+import me.ranol.scriptingspells.api.ConfigOption;
+import me.ranol.scriptingspells.api.docs.ConfigDocument;
+import me.ranol.scriptingspells.api.docs.ClassDocument;
+import me.ranol.scriptingspells.utils.UUIDStorage;
 
-@SpellDocs("모든 지속형 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
+@ClassDocument("모든 지속형 스펠의 기반이 되는 클래스입니다. 사용하지 않는 것을 추천합니다.")
 public abstract class BuffSpell extends TargetedEntitySpell {
-	@SpellOption("targeted")
-	@OptionDocs("바라보는 대상에게 버프를 걸 여부입니다.")
+	@ConfigOption("targeted")
+	@ConfigDocument("바라보는 대상에게 버프를 걸 여부입니다.")
 	protected boolean targeted = false;
 
-	@SpellOption("toggle")
-	@OptionDocs("버프를 껏다 켰다 할 수 있는 여부입니다.")
+	@ConfigOption("toggle")
+	@ConfigDocument("버프를 껏다 켰다 할 수 있는 여부입니다.")
 	protected boolean toggle = true;
 
-	@SpellOption("disable-message")
-	@OptionDocs("종료되었을 때, 대상에게 보내는 메시지입니다.")
+	@ConfigOption("disable-message")
+	@ConfigDocument("종료되었을 때, 대상에게 보내는 메시지입니다.")
 	protected String disableMessage = "";
 
-	@SpellOption("duration")
-	@OptionDocs("버프의 지속 시간입니다.")
+	@ConfigOption("duration")
+	@ConfigDocument("버프의 지속 시간입니다.")
 	protected float duration = 0f;
 
-	private UUIDStorange<Long> endAt = new UUIDStorange<>();
+	private UUIDStorage<Long> endAt = new UUIDStorage<>();
 
 	public BuffSpell(String name) {
 		super(name);

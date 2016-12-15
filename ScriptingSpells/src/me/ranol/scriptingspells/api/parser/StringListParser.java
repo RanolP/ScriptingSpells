@@ -2,8 +2,8 @@ package me.ranol.scriptingspells.api.parser;
 
 import java.util.List;
 
-import me.ranol.scriptingspells.api.IParser;
+import me.ranol.scriptingspells.api.AbstractParser;
 
-public interface StringListParser<T> extends IParser<List<String>, T> {
+public abstract class StringListParser<T> extends AbstractParser<List<String>, T> {
 
 }

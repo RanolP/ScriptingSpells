@@ -99,4 +99,18 @@ public class ScriptingSpells extends JavaPlugin {
 	public static void msg(CommandSender s, String message) {
 		rawMessage(s, PREFIX + " &a" + message);
 	}
+
+	public static void fancyException(Throwable t) {
+		line('6', 'l');
+		StringBuilder msg = new StringBuilder();
+		msg.append("&a" + t.getClass()
+			.getName() + ": " + t.getMessage() + "\n");
+		for (StackTraceElement s : t.getStackTrace()) {
+			msg.append(
+					"\t&e" + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":"
+							+ s.getLineNumber() + ")\n");
+		}
+		console(msg.toString());
+		line('6', 'l');
+	}
 }
