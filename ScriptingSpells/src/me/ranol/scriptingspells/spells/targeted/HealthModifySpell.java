@@ -2,10 +2,10 @@ package me.ranol.scriptingspells.spells.targeted;
 
 import org.bukkit.entity.LivingEntity;
 
-import me.ranol.scriptingspells.api.SpellCastState;
 import me.ranol.scriptingspells.api.ConfigOption;
-import me.ranol.scriptingspells.api.docs.ConfigDocument;
+import me.ranol.scriptingspells.api.SpellCastState;
 import me.ranol.scriptingspells.api.docs.ClassDocument;
+import me.ranol.scriptingspells.api.docs.ConfigDocument;
 import me.ranol.scriptingspells.api.effects.EffectPosition;
 import me.ranol.scriptingspells.spells.TargetedEntitySpell;
 
@@ -21,7 +21,9 @@ public class HealthModifySpell extends TargetedEntitySpell {
 
 	@Override
 	public SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		target.setHealth(target.getHealth() + modify * power);
+		double h = target.getHealth() + modify * power;
+		if (h >= target.getMaxHealth()) h = target.getMaxHealth();
+		target.setHealth(h);
 		playEffects(EffectPosition.TARGET, caster, target);
 		playEffects(EffectPosition.LINE, caster, target);
 		return SpellCastState.SUCESS;

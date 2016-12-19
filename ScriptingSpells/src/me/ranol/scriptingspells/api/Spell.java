@@ -20,7 +20,6 @@ import me.ranol.scriptingspells.api.docs.ConfigDocument;
 import me.ranol.scriptingspells.api.effects.EffectPosition;
 import me.ranol.scriptingspells.api.effects.SpellEffect;
 import me.ranol.scriptingspells.exceptions.ParserException;
-import me.ranol.scriptingspells.utils.UUIDStorage;
 
 @ClassDocument("모든 스펠의 기반이 되는 클래스입니다. 사용이 불가능합니다.")
 public abstract class Spell extends OptionReciever {
@@ -60,8 +59,6 @@ public abstract class Spell extends OptionReciever {
 	protected CastItem[] castItems = {};
 
 	private final String name;
-
-	private UUIDStorage<Long> castAt = new UUIDStorage<>();
 
 	@ConfigOption("effects")
 	@ConfigParser(EffectsParser.class)
@@ -114,14 +111,20 @@ public abstract class Spell extends OptionReciever {
 	}
 
 	public float getCooldown(LivingEntity caster) {
-		if (castAt.containsKey(caster.getUniqueId()))
-			return (castAt.get(caster.getUniqueId()) - System.currentTimeMillis()) / 1000f;
-		return 0;
+		return CooldownManager.get(caster, getName());
 	}
 
 	public float getCooldown(CommandSender s) {
 		if (s instanceof LivingEntity) return getCooldown((LivingEntity) s);
 		return 0f;
+	}
+
+	public boolean onCooldown(LivingEntity caster) {
+		return getCooldown(caster) > 0f;
+	}
+
+	protected void cooldown(LivingEntity caster) {
+		CooldownManager.apply(caster, getName(), cooldown);
 	}
 
 	@Override
@@ -152,18 +155,10 @@ public abstract class Spell extends OptionReciever {
 		return false;
 	}
 
-	public boolean onCooldown(LivingEntity caster) {
-		return getCooldown(caster) > 0.0f;
-	}
-
-	protected void cooldown(LivingEntity caster) {
-		castAt.set(caster.getUniqueId(), System.currentTimeMillis() + (long) (cooldown * 1000));
-	}
-
 	public SpellCastState cast(LivingEntity caster, float power) {
 		if (cooldownCheck && onCooldown(caster)) return SpellCastState.COOLDOWN;
 		SpellCastState state = castReal(caster, power);
-		if (!state.isSpellCancelled()) {
+		if (!state.isSpellCancelled() && state != SpellCastState.BUFF_DISABLE) {
 			cooldown(caster);
 			playEffects(EffectPosition.CASTER, caster);
 			if (!casterMessage.isEmpty()) caster.sendMessage(casterMessage.replace('&', '§')

@@ -1,7 +1,6 @@
 package me.ranol.scriptingspells.api.effects;
 
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
 
 import me.ranol.scriptingspells.api.ConfigOption;
 import me.ranol.scriptingspells.api.docs.ClassDocument;
@@ -19,35 +18,10 @@ public class LightningEffect extends SpellEffect {
 	}
 
 	@Override
-	public void play(EffectPosition pos, LivingEntity caster) {
-		play(pos, caster, caster.getLocation());
-	}
-
-	@Override
-	public void play(EffectPosition pos, LivingEntity caster, LivingEntity target) {
-		play(pos, caster, target.getLocation());
-	}
-
-	@Override
-	public void play(EffectPosition pos, LivingEntity caster, Location target) {
-		switch (pos) {
-		case CASTER:
-		case END:
-		case TICKS:
-			play(EffectPosition.LOCATION, caster, caster.getLocation());
-			break;
-		case TARGET:
-		case LOCATION:
-			target.getWorld()
-				.spigot()
-				.strikeLightningEffect(target, silent);
-			break;
-		case LINE:
-			for (Location l : getLines(caster.getLocation(), target)) {
-				play(EffectPosition.LOCATION, caster, l);
-			}
-			break;
-		}
+	public void playAtLocation(EffectPosition pos, Location l) {
+		l.getWorld()
+			.spigot()
+			.strikeLightningEffect(l, silent);
 	}
 
 }

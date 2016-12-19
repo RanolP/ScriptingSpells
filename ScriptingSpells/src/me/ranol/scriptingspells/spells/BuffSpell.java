@@ -26,6 +26,10 @@ public abstract class BuffSpell extends TargetedEntitySpell {
 	@ConfigDocument("버프의 지속 시간입니다.")
 	protected float duration = 0f;
 
+	@ConfigOption("start-at-cooldown")
+	@ConfigDocument("시작과 동시에 쿨타임을 적용시킬 여부입니다.")
+	protected boolean startAtCooldown = false;
+
 	private UUIDStorage<Long> endAt = new UUIDStorage<>();
 
 	public BuffSpell(String name) {
@@ -36,10 +40,11 @@ public abstract class BuffSpell extends TargetedEntitySpell {
 	@Override
 	public SpellCastState castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		LivingEntity e = targeted ? target : caster;
+		if (startAtCooldown) cooldown(e);
 		if (toggle && isActive(e)) {
+			if (!startAtCooldown) cooldown(e);
 			deactivate(e);
-			cooldown(e);
-			return SpellCastState.IGNORE;
+			return SpellCastState.BUFF_DISABLE;
 		}
 		if (onCooldown(caster)) return SpellCastState.COOLDOWN;
 		endAt.set(e.getUniqueId(), System.currentTimeMillis() + (long) (duration * power) * 1000);
@@ -50,13 +55,14 @@ public abstract class BuffSpell extends TargetedEntitySpell {
 	public abstract SpellCastState activate(LivingEntity e, float power);
 
 	public void deactivate(LivingEntity e) {
-		endAt.remove(e.getUniqueId());
+		if (!endAt.containsKey(e)) return;
+		endAt.remove(e);
 		if (!disableMessage.isEmpty()) e.sendMessage(disableMessage.replace('&', '§')
 			.replace("§§", "&"));
 	}
 
 	public final boolean isActive(LivingEntity e) {
-		return remainDuration(e) > 0f;
+		return remainDuration(e) > 0f && endAt.containsKey(e);
 	}
 
 	public final float remainDuration(LivingEntity e) {

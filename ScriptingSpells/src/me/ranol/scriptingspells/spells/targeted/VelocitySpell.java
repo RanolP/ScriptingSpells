@@ -55,7 +55,7 @@ public class VelocitySpell extends TargetedEntitySpell {
 		v.normalize()
 			.multiply(horizVelocity / 10 * power);
 		target.setVelocity(v);
-		playEffects(EffectPosition.LINE, caster, target);
+		if (!caster.equals(target)) playEffects(EffectPosition.LINE, caster, target);
 		playEffects(EffectPosition.TARGET, caster, target);
 		if (cancelDamage) cancel.add(target.getUniqueId());
 		return SpellCastState.SUCESS;

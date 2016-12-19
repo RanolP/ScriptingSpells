@@ -14,12 +14,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.ranol.scriptingspells.ServerOptions.Option;
 import me.ranol.scriptingspells.api.SpellManager;
 import me.ranol.scriptingspells.commands.CastCommand;
+import me.ranol.scriptingspells.nms.VolatileCode;
+import me.ranol.scriptingspells.nms.VolatileCodeDisabled;
+import me.ranol.scriptingspells.nms.VolatileCode_ProtocolLib;
+import me.ranol.scriptingspells.nms.VolatileCode_v1_10_R1;
 import net.md_5.bungee.api.ChatColor;
 
 public class ScriptingSpells extends JavaPlugin {
 	private static final String PREFIX = "&8&l[&aScriptingSpells&8&l]";
 	private YamlConfiguration config;
 	private static ScriptingSpells instance;
+	private VolatileCode volatileCode;
 
 	@Override
 	public void onEnable() {
@@ -28,11 +33,40 @@ public class ScriptingSpells extends JavaPlugin {
 			getDataFolder().mkdirs();
 			saveDefaultConfig();
 			saveResource("spells-default.yml", false);
+			saveResource("general.yml", false);
 		}
 		config = (YamlConfiguration) getConfig();
+		grabVolatile();
 		loadConfigs();
 		loadSpells();
 		register(new CastCommand(), "cast");
+	}
+
+	public static VolatileCode getVolatile() {
+		return getInstance().volatileCode;
+	}
+
+	private void grabVolatile() {
+		String version = Bukkit.getServer()
+			.getClass()
+			.getPackage()
+			.getName()
+			.replace('.', ',')
+			.split(",")[3];
+		switch (version) {
+		case "v1_10_R1":
+			volatileCode = new VolatileCode_v1_10_R1();
+			break;
+		default:
+			if (Bukkit.getPluginManager()
+				.getPlugin("ProtocolLib") != null) {
+				console("&aProtocolLib을 찾았습니다.");
+				volatileCode = new VolatileCode_ProtocolLib();
+				break;
+			}
+			volatileCode = new VolatileCodeDisabled();
+			break;
+		}
 	}
 
 	void register(TabExecutor exe, String name) {

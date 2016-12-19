@@ -2,7 +2,6 @@ package me.ranol.scriptingspells;
 
 import java.util.HashMap;
 
-import me.ranol.scriptingspells.api.AbstractParser;
 import me.ranol.scriptingspells.api.IParser;
 
 public enum ParserManagement {

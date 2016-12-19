@@ -19,6 +19,7 @@ public abstract class SpellEffect extends OptionReciever {
 
 	static {
 		register(new LightningEffect());
+		register(new ParticleEffect());
 	}
 
 	public SpellEffect() {
@@ -43,11 +44,19 @@ public abstract class SpellEffect extends OptionReciever {
 		playWithLocations(pos, caster.getLocation(), target);
 	}
 
-	public void playAtLocation(EffectPosition pos, Location l) {
-	}
+	public abstract void playAtLocation(EffectPosition pos, Location l);
 
 	public void playWithLocations(EffectPosition pos, Location l, Location l2) {
-		playAtLocation(pos, l);
+		switch (pos) {
+		case LINE:
+			for (Location locs : getLines(l, l2)) {
+				playAtLocation(pos, locs);
+			}
+			break;
+		default:
+			playAtLocation(pos, l);
+			break;
+		}
 	}
 
 	public void playAtEntity(EffectPosition pos, LivingEntity e) {

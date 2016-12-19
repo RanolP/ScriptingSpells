@@ -7,7 +7,8 @@ public enum SpellCastState {
 	NOTARGET(true),
 	CANTCAST(true),
 	IGNORE(false),
-	IGNORE_CANCEL(true);
+	IGNORE_CANCEL(true),
+	BUFF_DISABLE(false);
 
 	private final boolean cancel;
 
